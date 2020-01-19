@@ -2,8 +2,9 @@ import {
   CompiledContract,
   ContractBytecodes,
   IdObject,
-  LoadedContract,
-  Request
+  toIdObject,
+  WorkspaceRequest,
+  WorkspaceResponse
 } from "truffle-db/loaders/types";
 
 import { AddContracts } from "./add.graphql";
@@ -24,8 +25,12 @@ interface ContractsAddResponse {
 export function* generateContractsLoad(
   compiledContracts: CompiledContract[],
   contractBytecodes: ContractBytecodes[],
-  compilation: IdObject
-): Generator<Request, LoadedContract[], ContractsAddResponse> {
+  compilation: IdObject<DataModel.ICompilation>
+): Generator<
+  WorkspaceRequest,
+  DataModel.IContract[],
+  WorkspaceResponse<"contractsAdd", DataModel.IContractsAddPayload>
+> {
   const contracts = compiledContracts.map((contract, index) => {
     const { contractName: name, abi: abiObject } = contract;
     const { createBytecode, callBytecode } = contractBytecodes[index];
@@ -37,12 +42,8 @@ export function* generateContractsLoad(
       },
       compilation,
       sourceContract: { index },
-      createBytecode: {
-        id: createBytecode.id
-      },
-      callBytecode: {
-        id: callBytecode.id
-      }
+      createBytecode: toIdObject(createBytecode),
+      callBytecode: toIdObject(callBytecode)
     };
   });
 
@@ -51,13 +52,5 @@ export function* generateContractsLoad(
     variables: { contracts }
   };
 
-  // return only specific fields
-  return result.data.workspace.contractsAdd.contracts.map(
-    ({ id, name, createBytecode, callBytecode }) => ({
-      id,
-      name,
-      createBytecode,
-      callBytecode
-    })
-  );
+  return result.data.workspace.contractsAdd.contracts;
 }
