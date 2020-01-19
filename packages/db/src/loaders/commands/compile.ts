@@ -1,8 +1,10 @@
 import { TruffleDB } from "@truffle/db/db";
 import {
   WorkflowCompileResult,
-  Request,
-  Response
+  WorkspaceRequest,
+  IdObject,
+  toIdObject,
+  WorkspaceResponse
 } from "@truffle/db/loaders/types";
 
 import { generateBytecodesLoad } from "@truffle/db/loaders/resources/bytecodes";
@@ -22,7 +24,7 @@ import { generateProjectLoad } from "@truffle/db/loaders/resources/projects";
 export function* generateCompileLoad(
   result: WorkflowCompileResult,
   { directory }: { directory: string }
-): Generator<Request, any, Response> {
+): Generator<WorkspaceRequest, any, WorkspaceResponse<string>> {
   // start by adding loading the project resource
   const project = yield* generateProjectLoad(directory);
 
@@ -41,7 +43,9 @@ export function* generateCompileLoad(
   const compilationContractBytecodes = [];
   for (const compilation of compilationsWithContracts) {
     // add sources for each compilation
-    const sources = yield* generateSourcesLoad(compilation);
+    const sources: DataModel.ISource[] = yield* generateSourcesLoad(
+      compilation
+    );
 
     // add bytecodes
     const contractBytecodes = yield* generateBytecodesLoad(
@@ -50,7 +54,10 @@ export function* generateCompileLoad(
     compilationContractBytecodes.push(contractBytecodes);
 
     // record compilation with its sources (bytecodes are related later)
-    loadableCompilations.push({ compilation, sources });
+    loadableCompilations.push({
+      compilation,
+      sources: sources.map(toIdObject)
+    });
   }
   const compilations = yield* generateCompilationsLoad(loadableCompilations);
 
@@ -59,18 +66,15 @@ export function* generateCompileLoad(
   // again going one compilation at a time (for impl. convenience; HACK)
   // (@cds-amal reminds that "premature optimization is the root of all evil")
   const compilationContracts = {};
-  for (const [
-    compilationIndex,
-    { id: compilationId }
-  ] of compilations.entries()) {
+  for (const [compilationIndex, compilation] of compilations.entries()) {
     const compiledContracts =
       compilationsWithContracts[compilationIndex].contracts;
     const contractBytecodes = compilationContractBytecodes[compilationIndex];
 
-    compilationContracts[compilationId] = yield* generateContractsLoad(
+    compilationContracts[compilation.id] = yield* generateContractsLoad(
       compiledContracts,
       contractBytecodes,
-      { id: compilationId }
+      toIdObject(compilation)
     );
   }
 

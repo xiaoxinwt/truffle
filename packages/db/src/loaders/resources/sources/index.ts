@@ -2,23 +2,12 @@ import {
   CompiledContract,
   Compilation,
   IdObject,
-  Request
+  WorkspaceRequest,
+  WorkspaceResponse
 } from "@truffle/db/loaders/types";
 
 import { AddSources } from "./add.graphql";
 export { AddSources };
-
-interface SourcesAddResponse {
-  data: {
-    workspace: {
-      sourcesAdd: {
-        sources: {
-          id: string;
-        }[];
-      };
-    };
-  };
-}
 
 const contractSourceInput = ({
   contract: { sourcePath, source: contents }
@@ -39,7 +28,11 @@ const compilationSourceInputs = ({
 // returns list of IDs
 export function* generateSourcesLoad(
   compilation: Compilation
-): Generator<Request, IdObject[], SourcesAddResponse> {
+): Generator<
+  WorkspaceRequest,
+  DataModel.ISource[],
+  WorkspaceResponse<"sourcesAdd", DataModel.ISourcesAddPayload>
+> {
   // for each compilation, we need to load sources for each of the contracts
   const sources = compilationSourceInputs({ compilation });
 
@@ -48,6 +41,5 @@ export function* generateSourcesLoad(
     variables: { sources }
   };
 
-  // return only array of objects { id }
-  return result.data.workspace.sourcesAdd.sources.map(({ id }) => ({ id }));
+  return result.data.workspace.sourcesAdd.sources;
 }
