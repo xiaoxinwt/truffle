@@ -10,14 +10,6 @@ import {
 import { AddContracts } from "./add.graphql";
 export { AddContracts };
 
-interface ContractsAddResponse {
-  data: {
-    workspace: {
-      contractsAdd: DataModel.IContractsAddPayload;
-    };
-  };
-}
-
 /**
  * @dev pre-condition: indexes of array arguments must align
  *   (i.e., contractBytecodes[i] are bytecodes for the i-th compiledContract)
