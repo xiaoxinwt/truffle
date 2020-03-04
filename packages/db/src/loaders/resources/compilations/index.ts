@@ -71,7 +71,7 @@ export function* generateCompilationsLoad(
   const compilations = loadableCompilations.map(compilationInput);
 
   const result = yield {
-    mutation: AddCompilations,
+    request: AddCompilations,
     variables: { compilations }
   };
 

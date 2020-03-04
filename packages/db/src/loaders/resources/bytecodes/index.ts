@@ -33,7 +33,7 @@ export function* generateBytecodesLoad(
   const bytecodes = [...createBytecodes, ...callBytecodes];
 
   const result = yield {
-    mutation: AddBytecodes,
+    request: AddBytecodes,
     variables: { bytecodes }
   };
 

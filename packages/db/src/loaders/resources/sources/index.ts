@@ -37,7 +37,7 @@ export function* generateSourcesLoad(
   const sources = compilationSourceInputs({ compilation });
 
   const result = yield {
-    mutation: AddSources,
+    request: AddSources,
     variables: { sources }
   };
 
