@@ -111,25 +111,6 @@ export class ArtifactsLoader {
     );
   }
 
-  async assignProjectNames(
-    projectId: string,
-    nameRecords: DataModel.INameRecord[]
-  ) {
-    const projectNames = nameRecords.map(
-      ({ id: nameRecordId, name, type }) => ({
-        project: { id: projectId },
-        nameRecord: { id: nameRecordId },
-        name,
-        type
-      })
-    );
-
-    //set new projectNameHeads based on name records added
-    const projectNamesResult = await this.db.query(AssignProjectNames, {
-      projectNames
-    });
-  }
-
   async loadNameRecords(projectId: string, nameRecords: NameRecordObject[]) {
     const nameRecordsResult = await this.db.query(AddNameRecords, {
       nameRecords: nameRecords
