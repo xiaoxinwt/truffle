@@ -271,6 +271,8 @@ module.exports = {
           "node_modules",
           "@truffle/core",
           "lib",
+          "commands",
+          "create",
           "templates/"
         ),
         to: "templates",
