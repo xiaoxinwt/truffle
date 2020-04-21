@@ -23,7 +23,6 @@ run_geth() {
     --dev.period 0 \
     --allow-insecure-unlock \
     --targetgaslimit '7000000' \
-    --override.istanbul '0' \
     js ./scripts/geth-accounts.js \
     > /dev/null &
 }
@@ -51,7 +50,7 @@ elif [ "$QUORUM" = true ]; then
   git clone https://github.com/jpmorganchase/quorum-examples
   cd quorum-examples
   docker-compose up -d
-  sleep 90
+  sleep 60
   lerna run --scope truffle test --stream -- --exit
 
 elif [ "$COLONY" = true ]; then

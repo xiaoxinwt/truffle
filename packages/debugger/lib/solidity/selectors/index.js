@@ -16,7 +16,8 @@ function contextRequiresPhantomStackframes(context) {
     //we need this to be a boolean, not undefined, because it gets put in the state)
     semver.satisfies(context.compiler.version, ">=0.5.1", {
       includePrerelease: true
-    })
+    }) &&
+    !context.isConstructor //constructors should not get a phantom stackframe!
   );
 }
 
@@ -298,20 +299,15 @@ let solidity = createSelectorTree({
 
     /**
      * solidity.current.willCall
+     * note: includes creations, does *not* include instareturns
      */
-    willCall: createLeaf([evm.current.step.isCall], x => x),
-
-    /**
-     * solidity.current.willCreate
-     */
-    willCreate: createLeaf([evm.current.step.isCreate], x => x),
-
-    /**
-     * solidity.current.willCallOrCreateButInstantlyReturn
-     */
-    willCallOrCreateButInstantlyReturn: createLeaf(
-      [evm.current.step.isInstantCallOrCreate],
-      x => x
+    willCall: createLeaf(
+      [
+        evm.current.step.isCall,
+        evm.current.step.isCreate,
+        evm.current.step.isInstantCallOrCreate
+      ],
+      (isCall, isCreate, isInstant) => (isCall || isCreate) && !isInstant
     ),
 
     /**
